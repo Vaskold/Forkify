@@ -43,11 +43,11 @@ dom.searchPager.addEventListener("click", async e => {
         sView.clearResults();
         sView.render(state.search.result, state.globalPage, page);
     } else if (btnMore) {
-        const gPage = parseInt(btnMore.dataset.globalPage);
+        //const gPage = parseInt(btnMore.dataset.globalPage);
         const page = parseInt(btnMore.dataset.goto);
         state.globalPage++;
         await loadData();
-        sView.render(state.search.result, gPage, page);
+        sView.render(state.search.result, state.globalPage, page);
     }
 });
 
