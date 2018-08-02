@@ -1,24 +1,22 @@
 import Search from './models/Search';
 import * as sView from './views/searchView';
+import Recipe from './models/Recipe';
 import {clearLoader, elements as dom, renderLoader} from "./views/base";
 
-/** global state
- * search object
- * search page
- * current recipe obj
- * shopping list
- * liked recipes
- * @type {{search}}
- */
 const state = {
     globalPage: 1
 };
 
 const loadData = async () => {
     sView.clearResults();
-    renderLoader(dom.searchRes);
-    await state.search.getResults(state.globalPage);
-    clearLoader();
+    try {
+        renderLoader(dom.searchRes);
+        await state.search.getResults(state.globalPage);
+        clearLoader();
+    } catch (e) {
+        alert(e);
+        clearLoader();
+    }
 };
 
 const ctrlSearch = async () => {
@@ -26,7 +24,9 @@ const ctrlSearch = async () => {
     if (query) {
         state.search = new Search(query);
         await loadData();
-        sView.render(state.search.result, state.globalPage);
+        state.search.result.length ?
+            sView.render(state.search.result) :
+            alert('No results!');
     }
 };
 
@@ -41,15 +41,30 @@ dom.searchPager.addEventListener("click", async e => {
     if (btn) {
         const page = parseInt(btn.dataset.goto);
         sView.clearResults();
-        sView.render(state.search.result, state.globalPage, page);
+        sView.render(state.search.result, page);
     } else if (btnMore) {
-        //const gPage = parseInt(btnMore.dataset.globalPage);
         const page = parseInt(btnMore.dataset.goto);
         state.globalPage++;
         await loadData();
-        sView.render(state.search.result, state.globalPage, page);
+        window.scrollTo(0, 0);
+        sView.render(state.search.result, page);
     }
 });
+
+const ctrlRecipe = async () => {
+    const id = window.location.hash.replace('#', '');
+    if (id) {
+        state.recipe = new Recipe(id);
+        try {
+            await state.recipe.getRecipe();
+            state.recipe.parseIngredients();
+        } catch (e) {
+            alert(e);
+        }
+    }
+};
+
+["hashchange", "load"].forEach(event => window.addEventListener(event, ctrlRecipe));
 
 
 

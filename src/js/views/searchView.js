@@ -1,4 +1,4 @@
-import {elements as dom, elStrings, renderLeftButton as rlb, renderRightButton as rrb} from "./base";
+import {elements as dom} from "./base";
 
 export const getInput = () => dom.searchInput.value;
 
@@ -7,7 +7,7 @@ export const clearResults = () => {
     dom.searchPager.innerHTML = ''
 };
 
-const limitTitleLength = (title, limit = 30) => {
+const limitTitleLength = (title, limit = 22) => {
     return title.length > limit ?
         title.substring(0, title.substring(0, limit).lastIndexOf(' ')) + '...' :
         title;
@@ -46,8 +46,8 @@ const renderButton = (page, type) => `
     </button>
 `;
 
-const renderMoreButton = (page, globalPage) => `
-    <button class="btn-inline-more results__btn--next" data-global-page=${globalPage + 1} data-goto=${page + 1}>
+const renderMoreButton = page => `
+    <button class="btn-inline-more results__btn--next" data-goto=${page + 1}>
         <span>More...</span>
         <svg class="search__icon">
             <use href="img/icons.svg#icon-triangle-right"></use>
@@ -55,7 +55,7 @@ const renderMoreButton = (page, globalPage) => `
     </button>
 `;
 
-const renderPager = (page, amount, perPage, globalPage) => {
+const renderPager = (page, amount, perPage, showMore = true) => {
     const pages = Math.ceil(amount / perPage);
 
     let button;
@@ -69,18 +69,21 @@ const renderPager = (page, amount, perPage, globalPage) => {
     } else if (page === pages && pages > 1) {
         button = `
             ${renderButton(page, 'prev')}
-            ${renderMoreButton(page, globalPage)}
+            ${showMore ? renderMoreButton(page) : ""}
         `;
     }
 
     dom.searchPager.insertAdjacentHTML("beforeend", button);
 };
 
-export const render = (recipes, globalPage, page = 1, perPage = 10) => {
+export const render = (recipes, page = 1, perPage = 10) => {
     const start = (page - 1) * perPage;
     const end = start + perPage;
-    recipes.slice(start, end).forEach(renderRecipe);
-    renderPager(page, recipes.length, perPage, globalPage);
+    let recipesPage = recipes.slice(start, end);
+    recipesPage.forEach(renderRecipe);
+    recipesPage.length === perPage ?
+        renderPager(page, recipes.length, perPage) :
+        renderPager(page, recipes.length, perPage, false);
 };
 
 
